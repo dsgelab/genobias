@@ -38,7 +38,7 @@ mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_mcv_height.mt')
 
 output_bucket = 'gs://mattia-simulations/EUR350_sampling_mcv_height/'
 
-# Subsampling with different probs for M and F and running GWAS
+# Subsampling with different prob for M and F and running GWAS
 # Save mt cols to table and convert to pandas df for sampling
 mt = mt.annotate_cols(y0=mt.y[0])
 mt = mt.annotate_cols(y1=mt.y[1])

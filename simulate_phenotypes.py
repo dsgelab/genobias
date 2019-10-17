@@ -42,7 +42,7 @@ mt_eur = hl.variant_qc(mt_eur)
 mt_eur = mt_eur.filter_rows((mt_eur.variant_qc.AF[1] >= 0.05) & (mt_eur.variant_qc.AF[1] <= 0.95)).add_col_index()
 mt_eur = mt_eur.annotate_cols(s_index=mt_eur.col_idx).key_cols_by('s_index')
 
-# Randomly assign sex
+# Randomly assign sex (1 F, 0 M)
 random.seed(123)
 mt_eur = mt_eur.annotate_cols(sex=hl.cond(hl.rand_bool(0.5), 1, 0))
 mt_eur = mt_eur.checkpoint('gs://mattia-simulations/mt_eur_qc_checkpoint.mt', overwrite=True)

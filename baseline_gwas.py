@@ -35,7 +35,7 @@ def export_gwas(g, fname):
 mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_mcv_height.mt')
 output_bucket = 'gs://mattia-simulations/EUR350_sampling_mcv_height/'
 
-## Export phenotypes
+# Export phenotypes
 mt.cols().select('s',
                  'sex',
                  'y0',
