@@ -26,7 +26,7 @@ def export_gwas(g, fname):
 
 mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_mcv_height.mt')
 
-output_bucket = 'gs://mattia-simulations/EUR350_scenario_1/'
+output_bucket = 'gs://mattia-simulations/EUR350_scenario_2/'
 
 # Subsampling with different prob for M and F and running GWAS
 # Save mt cols to table and convert to pandas df for sampling
