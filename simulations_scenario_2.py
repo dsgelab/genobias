@@ -42,6 +42,7 @@ for ory0 in OR_y0:
     for ory1 in OR_y1:
         i += 1
 
+        # Simulation scenario 2: F picked based on y0 and y1, M picked randomly
         df['z'] = df['y0'] * log(ory0) + df['y1'] * log(ory1)
         df.loc[(df['sex'] == 0), 'z'] = 0
         df['prob'] = [1 / (1 + exp(-z)) for z in df['z']]
