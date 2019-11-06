@@ -2,18 +2,8 @@
 # coding: utf-8
 
 import hail as hl
-import hail.expr.aggregators as agg
-import hail.methods
-
-import requests
-from math import exp, log
-import pandas as pd
 import numpy as np
-from scipy.stats import chi2
-
-from typing import *
-
-import random
+from math import exp, log
 
 hl.init()
 
@@ -30,13 +20,13 @@ def gwas(y, x, cov):
 def export_gwas(g, fname):
     gann = g.annotate(A1=g.alleles[0],
                       A2=g.alleles[1]).key_by()
-    gann.select('A1', 'A2', 'rsid', 'n', 'beta', 'standard_error', 'p_value').export(fname)
+    gann.select('locus', 'A1', 'A2', 'rsid', 'n', 'beta', 'standard_error', 'p_value').export(fname)
     return
 
 
 mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_mcv_height.mt')
 
-output_bucket = 'gs://mattia-simulations/EUR350_sampling_mcv_height/'
+output_bucket = 'gs://mattia-simulations/EUR350_scenario_1/'
 
 # Subsampling with different prob for M and F and running GWAS
 # Save mt cols to table and convert to pandas df for sampling
@@ -53,15 +43,11 @@ for ory0 in OR_y0:
         i += 1
 
         df['z'] = df['y0'] * log(ory0) + df['y1'] * log(ory1)
+        df.loc[(df['sex'] == 0), 'z'] = -df['z']
+        df['prob'] = [1 / (1 + exp(-z)) for z in df['z']]
+        df['select'] = np.random.binomial(n=1, p=df['prob'], size=len(df.index))
 
-        df['prob'] = 0
-
-        df.loc[(df['sex'] == 0), 'prob'] = [1 / (1 + exp(-z)) for z in df.loc[(df['sex'] == 0), 'z']]
-        df.loc[(df['sex'] == 1), 'prob'] = [1 / (1 + exp(z)) for z in df.loc[(df['sex'] == 1), 'z']]
-
-        sampled = df.sample(frac=0.75, weights='prob', random_state=123)
-
-        samples_to_keep = set(sampled['s'])
+        samples_to_keep = set(df.loc[(df['select'] == 1), 's'])
         set_to_keep = hl.literal(samples_to_keep)
         mt_sampled = mt.filter_cols(set_to_keep.contains(mt['s']), keep=True)
 
