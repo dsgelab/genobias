@@ -1,0 +1,115 @@
+matchname,rg,se,pval,trait,group
+ADHD_2017,0.1929,0.0665,0.0037,ADHD,UKBB
+ADHD_2017,0.4307,0.0282,7.9323e-53,ADHD,23andMe
+ADHD_2017,0.3269,0.0505,9.6357e-11,ADHD,23andMe_lt30
+AgeFirstBirth_Female,-0.2844,0.0471,1.5479e-09,Age at first birth (Females),23andMe_lt30
+AgeFirstBirth_Female,-0.3387,0.0248,1.71e-42,Age at first birth (Females),23andMe
+AgeFirstBirth_Female,0.1097,0.0563,0.0515,Age at first birth (Females),UKBB
+AgeFirstBirth_Male,-0.2282,0.0348,5.3946e-11,Age at first birth (Males),23andMe
+AgeFirstBirth_Male,0.0767,0.0717,0.2847,Age at first birth (Males),UKBB
+AgeFirstBirth_Male,-0.1601,0.0616,0.0094,Age at first birth (Males),23andMe_lt30
+BMI,0.2225,0.0332,2.1091e-11,BMI,23andMe_lt30
+BMI,0.0983,0.0181,5.2132e-08,BMI,23andMe
+BMI,-0.1379,0.0374,2e-04,BMI,UKBB
+CAD,0.1277,0.0359,4e-04,Coronary Artery Disease,23andMe
+CAD,0.0286,0.0644,0.6567,Coronary Artery Disease,UKBB
+CAD,0.1019,0.0636,0.1089,Coronary Artery Disease,23andMe_lt30
+EA,0.2528,0.0369,7.4098e-12,Education attainment,UKBB
+EA,-0.2304,0.0281,2.5685e-16,Education attainment,23andMe_lt30
+EA,-0.314,0.0167,6.3804e-79,Education attainment,23andMe
+IBD,0.0085,0.0305,0.7813,Inflammatory Bowel Disease,23andMe
+IBD,0.0488,0.063,0.4389,Inflammatory Bowel Disease,UKBB
+IBD,-0.0317,0.0544,0.5597,Inflammatory Bowel Disease,23andMe_lt30
+LDL,0.0647,0.0219,0.0031,LDL Cholesterol,23andMe
+LDL,0.0644,0.0433,0.1365,LDL Cholesterol,23andMe_lt30
+LDL,-0.0587,0.0406,0.1479,LDL Cholesterol,UKBB
+MDD2018_ex23andMe.sumstats,0.2441,0.0247,5.8433e-23,Major depressive disorder,23andMe
+MDD2018_ex23andMe.sumstats,0.1435,0.0478,0.0027,Major depressive disorder,23andMe_lt30
+MDD2018_ex23andMe.sumstats,-0.0205,0.0485,0.6724,Major depressive disorder,UKBB
+Neuroticism_Full,0.0934,0.0271,6e-04,Neuroticism,23andMe
+Neuroticism_Full,0.0658,0.0553,0.2345,Neuroticism,23andMe_lt30
+Neuroticism_Full,-0.153,0.0707,0.0304,Neuroticism,UKBB
+NumberChildrenEverBorn_Female,0.0026,0.0661,0.9688,Number of children (Females),23andMe_lt30
+NumberChildrenEverBorn_Female,0.0446,0.0793,0.5738,Number of children (Females),UKBB
+NumberChildrenEverBorn_Female,0.0407,0.0376,0.2785,Number of children (Females),23andMe
+NumberChildrenEverBorn_Male,0.0071,0.0913,0.9382,Number of children (Males),UKBB
+NumberChildrenEverBorn_Male,0.0373,0.0399,0.3499,Number of children (Males),23andMe
+NumberChildrenEverBorn_Male,-0.0194,0.0703,0.7825,Number of children (Males),23andMe_lt30
+SCZ2,-0.0041,0.0367,0.9116,Schizophrenia,23andMe_lt30
+SCZ2,0.1577,0.0221,9.5845e-13,Schizophrenia,23andMe
+SCZ2,0.0662,0.0385,0.0855,Schizophrenia,UKBB
+SWB_Full,0.0184,0.0732,0.8018,Subjective well-being,UKBB
+SWB_Full,-0.1209,0.0646,0.0614,Subjective well-being,23andMe_lt30
+SWB_Full,-0.1302,0.0336,1e-04,Subjective well-being,23andMe
+T2D_2018,0.1409,0.0371,1e-04,Type 2 diabetes,23andMe_lt30
+T2D_2018,0.1165,0.0194,1.7664e-09,Type 2 diabetes,23andMe
+T2D_2018,-0.093,0.0453,0.04,Type 2 diabetes,UKBB
+TG,0.1206,0.0202,2.3784e-09,Triglycerides,23andMe
+TG,-0.0743,0.0366,0.0423,Triglycerides,UKBB
+TG,0.1751,0.0335,1.7758e-07,Triglycerides,23andMe_lt30
+UKB.self_rated_health,0.2294,0.0573,6.2996e-05,Self-rated health,23andMe_lt30
+UKB.self_rated_health,0.3188,0.0319,1.6952e-23,Self-rated health,23andMe
+UKB.self_rated_health,-0.0727,0.0678,0.2838,Self-rated health,UKBB
+age_at_menarche,-0.01,0.0243,0.6823,Age at menarche,23andMe
+age_at_menarche,0.0493,0.0495,0.3193,Age at menarche,UKBB
+age_at_menarche,-0.0776,0.042,0.0649,Age at menarche,23andMe_lt30
+age_at_menopauze,0.0326,0.0588,0.5789,Age at menopause,UKBB
+age_at_menopauze,-0.0676,0.0537,0.2082,Age at menopause,23andMe_lt30
+age_at_menopauze,-0.1006,0.0318,0.0016,Age at menopause,23andMe
+alcohol_clarke,0.0163,0.0334,0.6251,Alcohol use,23andMe
+alcohol_clarke,0.1406,0.0686,0.0405,Alcohol use,UKBB
+alcohol_clarke,-0.0159,0.0593,0.7887,Alcohol use,23andMe_lt30
+anorexia_2019,0.1148,0.0304,2e-04,Anorexia,23andMe
+anorexia_2019,0.1751,0.0507,6e-04,Anorexia,23andMe_lt30
+anorexia_2019,-8e-04,0.0568,0.9888,Anorexia,UKBB
+anxiety,0.1391,0.0835,0.0958,Anxiety,23andMe
+anxiety,0.1188,0.1455,0.4145,Anxiety,23andMe_lt30
+anxiety,0.0316,0.1417,0.8235,Anxiety,UKBB
+autism_2017.ipsych.pgc,0.2974,0.0317,6.3817e-21,Autism,23andMe
+autism_2017.ipsych.pgc,0.3023,0.0612,7.6818e-07,Autism,23andMe_lt30
+autism_2017.ipsych.pgc,0.2771,0.0955,0.0037,Autism,UKBB
+bipolar,-0.0528,0.0719,0.4623,Bipolar disorder,23andMe_lt30
+bipolar,0.0784,0.0725,0.2793,Bipolar disorder,UKBB
+bipolar,0.0235,0.0377,0.5329,Bipolar disorder,23andMe
+birth_weight,0.0918,0.0443,0.0382,Birth weight,UKBB
+birth_weight,-0.0973,0.0232,2.7445e-05,Birth weight,23andMe
+birth_weight,-0.0471,0.0421,0.2635,Birth weight,23andMe_lt30
+breast_cancer,0.0621,0.0371,0.0938,Breast Cancer,23andMe_lt30
+breast_cancer,0.0063,0.0192,0.744,Breast Cancer,23andMe
+breast_cancer,-0.0345,0.0364,0.343,Breast Cancer,UKBB
+cannabis_ever_2018.no23andMe,0.3126,0.0612,3.2596e-07,Cannabis use,UKBB
+cannabis_ever_2018.no23andMe,0.0595,0.0508,0.2413,Cannabis use,23andMe_lt30
+cannabis_ever_2018.no23andMe,0.1381,0.0297,3.3207e-06,Cannabis use,23andMe
+fasting_insuline,0.0337,0.0761,0.6582,Fasting Insuline,23andMe_lt30
+fasting_insuline,0.0237,0.0407,0.5601,Fasting Insuline,23andMe
+fasting_insuline,-0.1314,0.1044,0.2083,Fasting Insuline,UKBB
+finger2d4d.average.sumstats,0.0451,0.0599,0.4518,2D:4D digit ratio,23andMe
+finger2d4d.average.sumstats,0.1164,0.1487,0.4337,2D:4D digit ratio,UKBB
+finger2d4d.average.sumstats,0.0671,0.1201,0.5763,2D:4D digit ratio,23andMe_lt30
+height_combined,-0.0245,0.0326,0.4512,Height,23andMe_lt30
+height_combined,-0.0584,0.0169,6e-04,Height,23andMe
+height_combined,0.0766,0.0326,0.0187,Height,UKBB
+loneliness.rapid_UKB.sumstats,0.2434,0.0264,2.9288e-20,Loneliness,23andMe
+loneliness.rapid_UKB.sumstats,-0.033,0.0544,0.5445,Loneliness,UKBB
+loneliness.rapid_UKB.sumstats,0.1949,0.0437,8.2317e-06,Loneliness,23andMe_lt30
+openness,0.0236,0.0606,0.6962,Openness to experience,23andMe_lt30
+openness,0.2269,0.0689,0.001,Openness to experience,UKBB
+openness,0.0788,0.0339,0.0199,Openness to experience,23andMe
+prostate_cancer,-0.0188,0.0567,0.7404,Prostate Cancer,UKBB
+prostate_cancer,0.0023,0.0507,0.9644,Prostate Cancer,23andMe_lt30
+prostate_cancer,-0.0358,0.0261,0.1695,Prostate Cancer,23andMe
+risk_taking_PC1,0.2478,0.0201,4.8007e-35,Risk behaviour,23andMe
+risk_taking_PC1,0.139,0.039,4e-04,Risk behaviour,23andMe_lt30
+risk_taking_PC1,0.2917,0.0464,3.1002e-10,Risk behaviour,UKBB
+smoking_cigs_per_day,0.3054,0.1077,0.0046,Smoking: cigs/day,23andMe_lt30
+smoking_cigs_per_day,0.2532,0.0677,2e-04,Smoking: cigs/day,23andMe
+smoking_cigs_per_day,0.2455,0.1067,0.0214,Smoking: cigs/day,UKBB
+smoking_ever_vs_never,-0.0191,0.0732,0.7937,Smoking: ever smoking,UKBB
+smoking_ever_vs_never,0.2876,0.0611,2.4845e-06,Smoking: ever smoking,23andMe_lt30
+smoking_ever_vs_never,0.3441,0.0389,9.756e-19,Smoking: ever smoking,23andMe
+whr_females,0.0764,0.0384,0.0466,Waist-to-hip ratio (Females),23andMe
+whr_females,-0.0241,0.0817,0.7684,Waist-to-hip ratio (Females),UKBB
+whr_females,0.0951,0.0665,0.1529,Waist-to-hip ratio (Females),23andMe_lt30
+whr_males,-0.0274,0.0819,0.7383,Waist-to-hip ratio (Males),UKBB
+whr_males,0.2564,0.0797,0.0013,Waist-to-hip ratio (Males),23andMe_lt30
+whr_males,0.1184,0.0421,0.0049,Waist-to-hip ratio (Males),23andMe
