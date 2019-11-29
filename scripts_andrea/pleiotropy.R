@@ -52,6 +52,31 @@ chisq.test(obs, p=exp,correct=TRUE)$p.value
 
 
 
+#### CREATE SUPPLEMENTARI TABLE 1 WITH THE RESULTS FROM GWAS of 23ANDME 
+intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
+
+
+andme <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples.assoc")
+andme30 <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_Age30.assoc")
+
+## Keep common variants and imputation rsqr of 0.8
+andmeQC <- andme[andme$effect_freq > 0.01 & andme$effect_freq < 0.99 & andme$imp_rsqr > 0.8,]
+andme30QC <- andme30[andme30$effect_freq > 0.01 & andme30$effect_freq < 0.99 & andme30$imp_rsqr > 0.8,]
+
+## Read additional files
+directly_genotypes <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/direct_genotyped_SNPs_results.tsv")
+
+
+intervalsmm <- merge(intervals,directly_genotypes,by="combine_locus",all.x=T)
+intervalsmm2 <- merge(intervalsmm,andme,by.x="rsID",by.y="SNP")
+
+write.table(intervalsmm2[,c("combine_locus","rsID","A1","A2","Effect","se","P","varID")],file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/imputed_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
+
+
+
+
+
 #### THIS PART IS NOT CURRENTLY IN THE PAPER BUT CAN BE USED TO CHECK PROXY OF TOP SNPS INTO THE GWAS CATALOG
 
 ## Check loci associated with other traits
@@ -100,10 +125,14 @@ for (snp in unique(all_proxiesS$query_snp))
 	if (length(intes) > 0)
 	{ttout <-  ebicat37[ intes]
 	traits <- ttout@elementMetadata@listData$MAPPED_TRAIT
-	traits <- traits[!duplicated(traits)]
 	snpproxy <- getRsids(ttout)[!duplicated(traits)]
+	traits <- traits[!duplicated(traits)]
 	RESPROXY <- rbind(RESPROXY,cbind(snp,snpproxy,traits))}
 }
 
-write.csv(data.frame(table(RESPROXY[,3])),file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/temp.csv")
+
+to_exp <- data.frame(aggregate(list(RESPROXY[,2],RESPROXY[,3]), list(RESPROXY[,1]), function(x){paste(x,collapse = ",")}))
+colnames(to_exp) <- c("rsID","traits","rsid_proxy")
+
+write.table(to_exp,file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/gwas_catalog_look_up.tsv", row.names=F, quote=F, sep="\t")
 

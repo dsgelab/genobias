@@ -165,6 +165,8 @@ dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==1 | direct_geno_per_lo
 
 dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==0 & direct_geno_per_locus$flag_hwe==0 & direct_geno_per_locus$flag_callrate==0 & direct_geno_per_locus$flag_homology==0,])
 
+direct_geno_per_locus$combine_locus <- paste0(direct_geno_per_locus$chrom,"_",direct_geno_per_locus$locus_start,"_",direct_geno_per_locus$locus_end)
+write.table(direct_geno_per_locus[,c("combine_locus","varID","effect_allele","other_allele","geno_hwe_p","gt.rate","imp_freq_a","flag_homology","flag_maf","flag_hwe","flag_callrate","pvalue","effect","stderr")],file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/direct_genotyped_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
 
 ######### STEP 3. PLOT MANHATTAN PLOT #######
 
@@ -233,13 +235,13 @@ dev.off()
 ## Heritability for younger than 30
 /stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.tsv --N-col N --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited --snp SNP --a1 A1 --a2 A2 --p P --signed-sumstats Effect,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.sumstats.gz \
+/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.sumstats.gz \
 --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
 --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
 --frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited
+--out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited
 
 
 ## Genetic correlation between all and younger than 30
@@ -382,8 +384,8 @@ return(list(coefe,see,pval,coefe2,see2,pval2))}
 
 rg <- c(0.0092,-0.0074,0.0087,0.0145,0.0192)
 se <- c(0.005,0.0109,0.0054,0.0019,0.0008)
-prev <- c(0.46,0.47,0.56,0.54,0.53)
-samp <- c(rep(0.5,5))
+samp <- c(0.46,0.47,0.56,0.54,0.53)
+prev <- c(rep(0.5,5))
 pval <- 2*pnorm(-abs(rg/se))
 
 rg_liab <- liabscale(rg,se,prev,samp)[[1]]
@@ -404,8 +406,7 @@ df <- data.frame(rg_liab2,se_liab2,label,ymin,ymax,pval_liab2,labelsig)
 df$rg_liab[df$label=="iPSYCH"] <- 0.0001
 
 pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot.pdf", width=5,height=3)
-ggplot(aes(y=rg_liab,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.06)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
+ggplot(aes(y=rg_liab2,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.07)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
 dev.off()
-
 
 
