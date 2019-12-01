@@ -212,6 +212,13 @@ testeffectdiff <- betadiff(andmeall$Effect.x,andmeall$Effect.y,andmeall$se.x,and
 min(testeffectdiff[[2]])
 
 
+to_exp <- data.frame(rsISD=andmeall$SNP,beta_all=andmeall$Effect.x,se_all=andmeall$se.x,p_all=andmeall$P.x,beta_30=andmeall$Effect.y,se_30=andmeall$se.y,p_30=andmeall$P.y,testeffectdiff[[2]])
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
+
+to_exp <- merge(to_exp,intervals[,c("rsID","combine_locus")],by.x="rsISD",by.y="rsID")
+write.table(to_exp,"/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/differences_all_30.tsv", col.names=T, row.names=F, quote=F, sep="\t")
+
+
 pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/snp_replication_andme_andmelt30.pdf", width=5, height=5)
 ggplot(aes(y=Effect.x,x=Effect.y,ymin=betaallmin,ymax=betaallmax,xmin=beta30min,xmax=beta30max),data=andmeall) + geom_point(color="red",size=3)  +  geom_errorbar(aes(ymin = betaallmin,ymax = betaallmax),size=0.001) + geom_errorbarh(aes(xmin = beta30min,xmax = beta30max),size=0.001) + theme_bw() + ylab("Coefficient for all individuals") + xlab("Coefficient for individuals < 30 years old") + geom_abline(intercept=0, slope=1)  
 dev.off()

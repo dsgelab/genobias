@@ -76,10 +76,11 @@ write.table(intervalsmm2[,c("combine_locus","rsID","A1","A2","Effect","se","P","
 
 
 
+#################################################################
+## Check loci associated with other traits in GWAS catalog ######
+#################################################################
 
-#### THIS PART IS NOT CURRENTLY IN THE PAPER BUT CAN BE USED TO CHECK PROXY OF TOP SNPS INTO THE GWAS CATALOG
 
-## Check loci associated with other traits
 intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
 
 in_pleio_ana <- NULL
@@ -125,14 +126,21 @@ for (snp in unique(all_proxiesS$query_snp))
 	if (length(intes) > 0)
 	{ttout <-  ebicat37[ intes]
 	traits <- ttout@elementMetadata@listData$MAPPED_TRAIT
-	snpproxy <- getRsids(ttout)[!duplicated(traits)]
-	traits <- traits[!duplicated(traits)]
-	RESPROXY <- rbind(RESPROXY,cbind(snp,snpproxy,traits))}
+	pvals <- ttout@elementMetadata@listData['P-VALUE'][[1]]
+	snpproxy <- getRsids(ttout)[!duplicated(traits) & pvals < 0.00000005]
+	if(length(snpproxy)>0)
+	{traits <- traits[!duplicated(traits) & pvals < 0.00000005]
+	RESPROXY <- rbind(RESPROXY,cbind(snp,snpproxy,traits))}}
 }
 
 
 to_exp <- data.frame(aggregate(list(RESPROXY[,2],RESPROXY[,3]), list(RESPROXY[,1]), function(x){paste(x,collapse = ",")}))
-colnames(to_exp) <- c("rsID","traits","rsid_proxy")
+colnames(to_exp) <- c("rsID","rsid_proxy","traits")
+intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
+
+to_exp <- merge(to_exp,intervals[,c("rsID","combine_locus")],by.x="rsID")
 
 write.table(to_exp,file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/gwas_catalog_look_up.tsv", row.names=F, quote=F, sep="\t")
+
 
