@@ -383,8 +383,8 @@ liabscale <- function(coef,se,prev,samp)
 {coefe <- coef*prev*(1-prev)/(dnorm(qnorm(prev))^2)
 see <- se*prev*(1-prev)/(dnorm(qnorm(prev))^2)
 pval <- 2*pnorm(-abs(coefe/see))
-coefe2 <- coef*(prev*(1-prev)^2/(samp*(1-samp)*(dnorm(qnorm(prev))^2)))
-see2 <- se*(prev*(1-prev)^2/(samp*(1-samp)*(dnorm(qnorm(prev))^2)))
+coefe2 <- (coef*(prev*(1-prev))^2)/(samp*(1-samp)*(dnorm(qnorm(prev))^2))
+see2 <- (se*(prev*(1-prev))^2)/(samp*(1-samp)*(dnorm(qnorm(prev))^2))
 pval2 <- 2*pnorm(-abs(coefe2/see2))
 return(list(coefe,see,pval,coefe2,see2,pval2))}
 
@@ -413,7 +413,7 @@ df <- data.frame(rg_liab2,se_liab2,label,ymin,ymax,pval_liab2,labelsig)
 df$rg_liab[df$label=="iPSYCH"] <- 0.0001
 
 pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot.pdf", width=5,height=3)
-ggplot(aes(y=rg_liab2,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.07)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
+ggplot(aes(y=rg_liab2,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
 dev.off()
 
 

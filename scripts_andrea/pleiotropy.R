@@ -6,7 +6,6 @@ library(plyr)
 library(ggplot2)
 library(LDlinkR) # devtools::install_github("CBIIT/LDlinkR")
 library(gwascat)
-data(ebicat37)
 library(ontologyIndex)
 
 
@@ -119,12 +118,18 @@ all_proxies <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of
 all_proxiesS <- all_proxies[all_proxies$R2 > 0.2,]
 
 
+ebicat37_latest <- makeCurrentGwascat(table.url =
+"http://www.ebi.ac.uk/gwas/api/search/downloads/alternative",
+fixNonASCII = TRUE, genome="GRCh37",
+withOnt = TRUE)
+
+
 RESPROXY <- NULL
 for (snp in unique(all_proxiesS$query_snp))
 {
-	intes <- intersect(getRsids(ebicat37) , all_proxiesS$RS_Number[all_proxiesS$query_snp==snp])
+	intes <- intersect(getRsids(ebicat37_latest) , all_proxiesS$RS_Number[all_proxiesS$query_snp==snp])
 	if (length(intes) > 0)
-	{ttout <-  ebicat37[ intes]
+	{ttout <-  ebicat37_latest[ intes]
 	traits <- ttout@elementMetadata@listData$MAPPED_TRAIT
 	pvals <- ttout@elementMetadata@listData['P-VALUE'][[1]]
 	snpproxy <- getRsids(ttout)[!duplicated(traits) & pvals < 0.00000005]
