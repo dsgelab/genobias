@@ -376,8 +376,7 @@ write.table(finngen_an1_m[,c("V1","ref","alt","beta","sebeta","pval")], file="/s
 
 
 #########################################################################################
-#### PLOT OF HERITABILITIES - STILL UNCLEAR WHICH SCALE TO USE, UP FOR DISCUSSION #######
-#########################################################################################
+#### PLOT OF HERITABILITIES ########################################################################################
 
 liabscale <- function(coef,se,prev,samp)
 {coefe <- coef*prev*(1-prev)/(dnorm(qnorm(prev))^2)
@@ -410,10 +409,32 @@ labelsig <- c("","","","***","***")
 ymin <- rg_liab2 - 1.96*se_liab2
 ymax <- rg_liab2 + 1.96*se_liab2
 df <- data.frame(rg_liab2,se_liab2,label,ymin,ymax,pval_liab2,labelsig)
-df$rg_liab[df$label=="iPSYCH"] <- 0.0001
+df$rg_liab3 <- df$rg_liab2
+df$rg_liab3[df$label=="iPSYCH"] <- 0.0001 ## Becase negative, set to 0
 
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot.pdf", width=5,height=3)
-ggplot(aes(y=rg_liab2,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
+
+### Main plot ####
+pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals.pdf", width=4.3,height=3)
+ggplot(aes(y=rg_liab3,x=label), data=df) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) + geom_hline(yintercept=0)
 dev.off()
+
+
+
+### Meta-analysis ###
+meta_passive <- metagen(rg_liab2[1:3],se_liab2[1:3],studlab=seq(1:3))
+meta_active <- metagen(rg_liab2[4:5],se_liab2[4:5],studlab=seq(1:2))
+
+df_meta <- data.frame(rg_liab2=c(meta_passive$TE.fixed,meta_active$TE.fixed),se_liab2=c(meta_passive$seTE.fixed,meta_active$seTE.fixed),label=c("meta-passive","meta-active"),pval_liab2=c(meta_passive$pval.fixed,meta_active$pval.fixed),labelsig=c("*","***"))
+df_meta$ymin <- df_meta$rg_liab2 - 1.96*df_meta$se_liab2
+df_meta$ymax <- df_meta$rg_liab2 + 1.96*df_meta$se_liab2
+
+
+pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals_meta.pdf", width=1.8,height=3)
+ggplot(aes(y=rg_liab2,x=label), data=df_meta) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df_meta$pval_liab2, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) +
+  theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank()) + geom_hline(yintercept=0)
+dev.off()
+
 
 
