@@ -6,7 +6,6 @@ library(plyr)
 library(ggplot2)
 library(LDlinkR) # devtools::install_github("CBIIT/LDlinkR")
 library(gwascat)
-data(ebicat37)
 library(ontologyIndex)
 
 
@@ -52,9 +51,35 @@ chisq.test(obs, p=exp,correct=TRUE)$p.value
 
 
 
-#### THIS PART IS NOT CURRENTLY IN THE PAPER BUT CAN BE USED TO CHECK PROXY OF TOP SNPS INTO THE GWAS CATALOG
+#### CREATE SUPPLEMENTARI TABLE 1 WITH THE RESULTS FROM GWAS of 23ANDME 
+intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
 
-## Check loci associated with other traits
+
+andme <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples.assoc")
+andme30 <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_Age30.assoc")
+
+## Keep common variants and imputation rsqr of 0.8
+andmeQC <- andme[andme$effect_freq > 0.01 & andme$effect_freq < 0.99 & andme$imp_rsqr > 0.8,]
+andme30QC <- andme30[andme30$effect_freq > 0.01 & andme30$effect_freq < 0.99 & andme30$imp_rsqr > 0.8,]
+
+## Read additional files
+directly_genotypes <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/direct_genotyped_SNPs_results.tsv")
+
+
+intervalsmm <- merge(intervals,directly_genotypes,by="combine_locus",all.x=T)
+intervalsmm2 <- merge(intervalsmm,andme,by.x="rsID",by.y="SNP")
+
+write.table(intervalsmm2[,c("combine_locus","rsID","A1","A2","Effect","se","P","varID")],file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/imputed_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
+
+
+
+
+#################################################################
+## Check loci associated with other traits in GWAS catalog ######
+#################################################################
+
+
 intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
 
 in_pleio_ana <- NULL
@@ -93,17 +118,34 @@ all_proxies <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of
 all_proxiesS <- all_proxies[all_proxies$R2 > 0.2,]
 
 
+ebicat37_latest <- makeCurrentGwascat(table.url =
+"http://www.ebi.ac.uk/gwas/api/search/downloads/alternative",
+fixNonASCII = TRUE, genome="GRCh37",
+withOnt = TRUE)
+
+
 RESPROXY <- NULL
 for (snp in unique(all_proxiesS$query_snp))
 {
-	intes <- intersect(getRsids(ebicat37) , all_proxiesS$RS_Number[all_proxiesS$query_snp==snp])
+	intes <- intersect(getRsids(ebicat37_latest) , all_proxiesS$RS_Number[all_proxiesS$query_snp==snp])
 	if (length(intes) > 0)
-	{ttout <-  ebicat37[ intes]
+	{ttout <-  ebicat37_latest[ intes]
 	traits <- ttout@elementMetadata@listData$MAPPED_TRAIT
-	traits <- traits[!duplicated(traits)]
-	snpproxy <- getRsids(ttout)[!duplicated(traits)]
-	RESPROXY <- rbind(RESPROXY,cbind(snp,snpproxy,traits))}
+	pvals <- ttout@elementMetadata@listData['P-VALUE'][[1]]
+	snpproxy <- getRsids(ttout)[!duplicated(traits) & pvals < 0.00000005]
+	if(length(snpproxy)>0)
+	{traits <- traits[!duplicated(traits) & pvals < 0.00000005]
+	RESPROXY <- rbind(RESPROXY,cbind(snp,snpproxy,traits))}}
 }
 
-write.csv(data.frame(table(RESPROXY[,3])),file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/temp.csv")
+
+to_exp <- data.frame(aggregate(list(RESPROXY[,2],RESPROXY[,3]), list(RESPROXY[,1]), function(x){paste(x,collapse = ",")}))
+colnames(to_exp) <- c("rsID","rsid_proxy","traits")
+intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
+
+to_exp <- merge(to_exp,intervals[,c("rsID","combine_locus")],by.x="rsID")
+
+write.table(to_exp,file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/gwas_catalog_look_up.tsv", row.names=F, quote=F, sep="\t")
+
 

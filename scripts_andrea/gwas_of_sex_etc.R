@@ -165,6 +165,8 @@ dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==1 | direct_geno_per_lo
 
 dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==0 & direct_geno_per_locus$flag_hwe==0 & direct_geno_per_locus$flag_callrate==0 & direct_geno_per_locus$flag_homology==0,])
 
+direct_geno_per_locus$combine_locus <- paste0(direct_geno_per_locus$chrom,"_",direct_geno_per_locus$locus_start,"_",direct_geno_per_locus$locus_end)
+write.table(direct_geno_per_locus[,c("combine_locus","varID","effect_allele","other_allele","geno_hwe_p","gt.rate","imp_freq_a","flag_homology","flag_maf","flag_hwe","flag_callrate","pvalue","effect","stderr")],file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/direct_genotyped_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
 
 ######### STEP 3. PLOT MANHATTAN PLOT #######
 
@@ -210,6 +212,13 @@ testeffectdiff <- betadiff(andmeall$Effect.x,andmeall$Effect.y,andmeall$se.x,and
 min(testeffectdiff[[2]])
 
 
+to_exp <- data.frame(rsISD=andmeall$SNP,beta_all=andmeall$Effect.x,se_all=andmeall$se.x,p_all=andmeall$P.x,beta_30=andmeall$Effect.y,se_30=andmeall$se.y,p_30=andmeall$P.y,testeffectdiff[[2]])
+intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
+
+to_exp <- merge(to_exp,intervals[,c("rsID","combine_locus")],by.x="rsISD",by.y="rsID")
+write.table(to_exp,"/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/differences_all_30.tsv", col.names=T, row.names=F, quote=F, sep="\t")
+
+
 pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/snp_replication_andme_andmelt30.pdf", width=5, height=5)
 ggplot(aes(y=Effect.x,x=Effect.y,ymin=betaallmin,ymax=betaallmax,xmin=beta30min,xmax=beta30max),data=andmeall) + geom_point(color="red",size=3)  +  geom_errorbar(aes(ymin = betaallmin,ymax = betaallmax),size=0.001) + geom_errorbarh(aes(xmin = beta30min,xmax = beta30max),size=0.001) + theme_bw() + ylab("Coefficient for all individuals") + xlab("Coefficient for individuals < 30 years old") + geom_abline(intercept=0, slope=1)  
 dev.off()
@@ -233,13 +242,13 @@ dev.off()
 ## Heritability for younger than 30
 /stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.tsv --N-col N --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited --snp SNP --a1 A1 --a2 A2 --p P --signed-sumstats Effect,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.sumstats.gz \
+/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.sumstats.gz \
 --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
 --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
 --frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited
+--out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited
 
 
 ## Genetic correlation between all and younger than 30
@@ -367,23 +376,22 @@ write.table(finngen_an1_m[,c("V1","ref","alt","beta","sebeta","pval")], file="/s
 
 
 #########################################################################################
-#### PLOT OF HERITABILITIES - STILL UNCLEAR WHICH SCALE TO USE, UP FOR DISCUSSION #######
-#########################################################################################
+#### PLOT OF HERITABILITIES ########################################################################################
 
 liabscale <- function(coef,se,prev,samp)
 {coefe <- coef*prev*(1-prev)/(dnorm(qnorm(prev))^2)
 see <- se*prev*(1-prev)/(dnorm(qnorm(prev))^2)
 pval <- 2*pnorm(-abs(coefe/see))
-coefe2 <- coef*(prev*(1-prev)^2/(samp*(1-samp)*(dnorm(qnorm(prev))^2)))
-see2 <- se*(prev*(1-prev)^2/(samp*(1-samp)*(dnorm(qnorm(prev))^2)))
+coefe2 <- (coef*(prev*(1-prev))^2)/(samp*(1-samp)*(dnorm(qnorm(prev))^2))
+see2 <- (se*(prev*(1-prev))^2)/(samp*(1-samp)*(dnorm(qnorm(prev))^2))
 pval2 <- 2*pnorm(-abs(coefe2/see2))
 return(list(coefe,see,pval,coefe2,see2,pval2))}
 
 
 rg <- c(0.0092,-0.0074,0.0087,0.0145,0.0192)
 se <- c(0.005,0.0109,0.0054,0.0019,0.0008)
-prev <- c(0.46,0.47,0.56,0.54,0.53)
-samp <- c(rep(0.5,5))
+samp <- c(0.46,0.47,0.56,0.54,0.53)
+prev <- c(rep(0.5,5))
 pval <- 2*pnorm(-abs(rg/se))
 
 rg_liab <- liabscale(rg,se,prev,samp)[[1]]
@@ -401,10 +409,31 @@ labelsig <- c("","","","***","***")
 ymin <- rg_liab2 - 1.96*se_liab2
 ymax <- rg_liab2 + 1.96*se_liab2
 df <- data.frame(rg_liab2,se_liab2,label,ymin,ymax,pval_liab2,labelsig)
-df$rg_liab[df$label=="iPSYCH"] <- 0.0001
+df$rg_liab3 <- df$rg_liab2
+df$rg_liab3[df$label=="iPSYCH"] <- 0.0001 ## Becase negative, set to 0
 
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot.pdf", width=5,height=3)
-ggplot(aes(y=rg_liab,x=label), data=df) + geom_bar(stat="identity", aes(fill=labelsig)) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(0,0.06)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=3, hjust=+0.4) + scale_fill_manual(values=c("blue","red")) + theme(legend.position = "none") 
+
+### Main plot ####
+pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals.pdf", width=4.3,height=3)
+ggplot(aes(y=rg_liab3,x=label), data=df) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) + geom_hline(yintercept=0)
+dev.off()
+
+
+
+### Meta-analysis ###
+meta_passive <- metagen(rg_liab2[1:3],se_liab2[1:3],studlab=seq(1:3))
+meta_active <- metagen(rg_liab2[4:5],se_liab2[4:5],studlab=seq(1:2))
+
+df_meta <- data.frame(rg_liab2=c(meta_passive$TE.fixed,meta_active$TE.fixed),se_liab2=c(meta_passive$seTE.fixed,meta_active$seTE.fixed),label=c("meta-passive","meta-active"),pval_liab2=c(meta_passive$pval.fixed,meta_active$pval.fixed),labelsig=c("*","***"))
+df_meta$ymin <- df_meta$rg_liab2 - 1.96*df_meta$se_liab2
+df_meta$ymax <- df_meta$rg_liab2 + 1.96*df_meta$se_liab2
+
+
+pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals_meta.pdf", width=1.8,height=3)
+ggplot(aes(y=rg_liab2,x=label), data=df_meta) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df_meta$pval_liab2, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) +
+  theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank()) + geom_hline(yintercept=0)
 dev.off()
 
 
