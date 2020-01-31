@@ -72,7 +72,9 @@ se=sqrt(se)
 unbiased[3,]=c("Unbiased",beta,se,"Women")
 
 colnames(unbiased)=c("BMI_OR","beta","se","Type")
-
+unbiased=data.frame(unbiased)
+unbiased$beta=as.numeric(as.character(unbiased$beta))
+unbiased$se=as.numeric(as.character(unbiased$se))
 
 
 
@@ -81,7 +83,7 @@ colnames(unbiased)=c("BMI_OR","beta","se","Type")
 parameter.values=c(exp(-log(rev(c(1,1.5,1.8,2,4)))),exp(log(c(1.5,1.8,2,4))))
 set.seed(123456)
 res.all=c()
-res.man=c()
+res.men=c()
 res.women=c()
 k=1
 for(i in parameter.values){
@@ -162,13 +164,27 @@ unbiased$high=unbiased$beta+qnorm(p = 1-0.025,lower.tail = T)*unbiased$se
 unbiased$low=unbiased$beta+qnorm(p = 1-0.025,lower.tail = F)*unbiased$se
 
 pdf("original_forestplot.pdf")
-ggplot(unbiased,aes(x=Trait,y=exp(beta),ymin=exp(low),ymax=exp(high)))+geom_pointrange()+theme_minimal()+ylim(0,4)+geom_hline(yintercept=1, linetype="dashed", color="red")
+ggplot(unbiased,aes(x=Type,y=exp(beta),ymin=exp(low),ymax=exp(high)))+geom_pointrange()+theme_minimal()+ylim(0,4)+geom_hline(yintercept=1, linetype="dashed", color="red")
 dev.off()
-results$BMI_OR=round(as.numeric(as.character(results$BMI_OR),2))
+results$BMI_OR=as.factor(round(as.numeric(as.character(results$BMI_OR)),2))
   
-  
+massimi=by(exp(results$high),INDICES = results$BMI_OR,FUN = max)
+
+df1=data.frame(x1 =c(1,1.2),y1 =c(massimi[1]+0.1,massimi[1]+0.1))  ## x=y
+df2=data.frame(x1 =c(2,2.2),y1 =c(massimi[2]+0.1,massimi[2]+0.1))  ## x=y
+df3=data.frame(x1 =c(3,3.2),y1 =c(massimi[3]+0.1,massimi[3]+0.1))  ## x=y
+df4=data.frame(x1 =c(4,4.2),y1 =c(massimi[4]+0.1,massimi[4]+0.1))  ## x=y
+df5=data.frame(x1 =c(5,5.2),y1 =c(massimi[5]+0.1,massimi[5]+0.1))  ## x=y
+df6=data.frame(x1 =c(6,6.2),y1 =c(massimi[6]+0.1,massimi[6]+0.1))  ## x=y
+df7=data.frame(x1 =c(7,7.2),y1 =c(massimi[7]+0.1,massimi[7]+0.1))  ## x=y
+df8=data.frame(x1 =c(8,8.2),y1 =c(massimi[8]+0.1,massimi[8]+0.1))  ## x=y
+df9=data.frame(x1 =c(9,9.2),y1 =c(massimi[9]+0.1,massimi[9]+0.1))  ## x=y
+
+pvals=pchisq(((as.numeric(men[,2])-as.numeric(women[,2]))/sqrt(as.numeric(men[,3])^2+as.numeric(women[,3])^2))^2,df=1,lower=F)
+pvals=formatC(pvals, format = "e", digits = 1)
+
 pdf("Results_simulations.pdf",width=21,height=7)
-ggplot(results,aes(x=BMI_OR,y=exp(beta),ymin=exp(low),ymax=exp(high),color=as.factor(Type)))+geom_pointrange(position=position_dodge(0.5),size=1.5)+
+p1=ggplot(results,aes(x=BMI_OR,y=exp(beta),ymin=exp(low),ymax=exp(high),color=as.factor(Type)))+geom_pointrange(position=position_dodge(0.5),size=1.5)+
   theme_minimal()+ylim(0,6)+geom_hline(yintercept=1, linetype="dashed", color="red")+
   geom_hline(yintercept=exp(unbiased$beta[1]), linetype="solid", color="#F8766D")+geom_hline(yintercept=exp(unbiased$beta[2]), linetype="solid", color="#00BA38")+
   geom_hline(yintercept=exp(unbiased$beta[3]), linetype="solid", color="#619CFF")+theme(axis.text.x = element_text(size=18),
@@ -179,7 +195,23 @@ ggplot(results,aes(x=BMI_OR,y=exp(beta),ymin=exp(low),ymax=exp(high),color=as.fa
                                                                                         legend.text = element_text(size=20))+
   
   xlab("Participation Bias")+ylab("Causal Effect \n BMI->T2D (OR x SD)")
+
+  p1+geom_line(aes(x =x1, y =y1 ),data=df1,inherit.aes = FALSE) + annotate("text", x = mean(df1$x1), y = (massimi[1]+0.2), label = pvals[1], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df2,inherit.aes = FALSE) + annotate("text", x = mean(df2$x1), y = (massimi[2]+0.2), label = pvals[2], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df3,inherit.aes = FALSE) + annotate("text", x = mean(df3$x1), y = (massimi[3]+0.2), label = pvals[3], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df4,inherit.aes = FALSE) + annotate("text", x = mean(df4$x1), y = (massimi[4]+0.2), label = pvals[4], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df5,inherit.aes = FALSE) + annotate("text", x = mean(df5$x1), y = (massimi[5]+0.2), label = pvals[5], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df6,inherit.aes = FALSE) + annotate("text", x = mean(df6$x1), y = (massimi[6]+0.2), label = pvals[6], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df7,inherit.aes = FALSE) + annotate("text", x = mean(df7$x1), y = (massimi[7]+0.2), label = pvals[7], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df8,inherit.aes = FALSE) + annotate("text", x = mean(df8$x1), y = (massimi[8]+0.2), label = pvals[8], size = 3)+
+    geom_line(aes(x =x1, y =y1 ),data=df9,inherit.aes = FALSE) + annotate("text", x = mean(df9$x1), y = (massimi[9]+0.2), label = pvals[9], size = 3)
 dev.off()
+
+  
+
+
+
+
 
 
 
