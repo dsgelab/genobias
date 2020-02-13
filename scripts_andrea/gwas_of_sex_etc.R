@@ -344,34 +344,14 @@ write.table(pyshc_cov[,c("rsid","reference_allele","effect_allele","n","beta","s
 ### Finngen ##
 ##############
 
-snpid <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/r3_rsids.tsv")
-
-finngen_an1 <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb")
-finngen_an1$V2 <- paste0(finngen_an1$"#chrom","_",finngen_an1$pos)
-
-
-finngen_an1_m <- merge(finngen_an1,snpid,by="V2")
-finngen_an1_m <- finngen_an1_m[!duplicated(finngen_an1_m$V1),]
-finngen_an1_m <- finngen_an1_m[finngen_an1_m$"#chrom" != "X",]
-
-
-dim(finngen_an1_m[finngen_an1_m$pval < 5e-8,])
-
-write.table(finngen_an1_m[,c("V1","ref","alt","beta","sebeta","pval")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb_edited.tsv", row.names=F, quote=F, sep="\t")
-
-
-## Munge 
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb_edited.tsv --N 135638 --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb_edited --snp V1 --a1 alt --a2 ref --p pval --signed-sumstats beta,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
-
-
 #h2
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb_edited.sumstats.gz \
+/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/finngen_passive.sumstats.gz \
 --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
 --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
 --frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/Finngen_r3_SEX_IMPUTED.pheweb_edited
+--out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/finngen_passive
 
 
 
@@ -388,9 +368,9 @@ pval2 <- 2*pnorm(-abs(coefe2/see2))
 return(list(coefe,see,pval,coefe2,see2,pval2))}
 
 
-rg <- c(0.0092,-0.0074,0.0087,0.0145,0.0192)
-se <- c(0.005,0.0109,0.0054,0.0019,0.0008)
-samp <- c(0.46,0.47,0.56,0.54,0.53)
+rg <- c(0.0092,-0.0074,0.0037,0.0145,0.0192)
+se <- c(0.005,0.0109,0.0053,0.0019,0.0008)
+samp <- c(0.46,0.47,0.57,0.54,0.53)
 prev <- c(rep(0.5,5))
 pval <- 2*pnorm(-abs(rg/se))
 
