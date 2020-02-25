@@ -62,16 +62,15 @@ for i in range(5):
     # Save mt cols to table and convert to pandas df for sampling
     df = mt.cols().select('s', 'X', 'Y', 'U', 'sex').key_by().to_pandas()
 
-    # Selection based on X,Y, no sex-diff bias
-    OR_x = [2, 3]
-    # OR_y = [1.2, 1.5, 1.8, 2, 3]
+    # Selection based on X,Y,U no sex-diff bias
+    OR = [1.2, 1.5, 1.8, 2, 3]
 
-    for ox in OR_x:
-        df['z'] = df['X'] * log(ox) + df['Y'] * log(ox) + df['U'] * log(2)
+    for o in OR:
+        df['z'] = df['X'] * log(o) + df['Y'] * log(o) + df['U'] * log(2)
         df['prob'] = [1 / (1 + exp(-z)) for z in df['z']]
         df['sel'] = np.random.binomial(n=1, p=df['prob'], size=len(df.index))
 
-        name = '_' + str(rgs[i]) + '_' + str(ox)
+        name = '_' + str(rgs[i]) + '_' + str(o)
 
         # Prediction
         formula = 'sel ~ X + U'
