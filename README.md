@@ -1,5 +1,4 @@
-# genobias
-*Simulations to assess the effects of participation bias in GWAS*
+# Reproduce the main analyses in *Genetic analyses identify widespread determinants of sex-differential study participation bias*
 
 
 - Summary statisics for the GWAS of sex (excluded 23andMe) can be found in the google drive at: /genobias_epi/summary_stats/
