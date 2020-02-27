@@ -59,6 +59,29 @@ mt = mt.annotate_cols(X=mt.y[x])
 for i in range(5):
     mt = mt.annotate_cols(Y=mt.y[i+2])
 
+    # GWAS of X, Y in all
+    result_ht = hl.linear_regression_rows(y=[mt.X,
+                                             mt.Y],
+                                          x=mt.GT.n_alt_alleles(),
+                                          covariates=[1],
+                                          pass_through=['rsid'])
+
+    result_ht = result_ht.annotate(A1=result_ht.alleles[0],
+                                   A2=result_ht.alleles[1]).key_by()
+
+    file_names = [output_bucket + 'gwas/gwas_X_' + str(rgs[i]) + '.tsv',
+                  output_bucket + 'gwas/gwas_Y_' + str(rgs[i]) + '.tsv']
+
+    for j, file_name in enumerate(file_names):
+        result_ht.select(result_ht.locus,
+                         result_ht.A1,
+                         result_ht.A2,
+                         result_ht.rsid,
+                         N=result_ht.n,
+                         beta=result_ht.beta[j],
+                         se=result_ht.standard_error[j],
+                         p_value=result_ht.p_value[j]).export(file_name)
+
     # Save mt cols to table and convert to pandas df for sampling
     df = mt.cols().select('s', 'X', 'Y', 'U', 'sex').key_by().to_pandas()
 
@@ -108,11 +131,12 @@ for i in range(5):
                       output_bucket + 'gwas/gwas_X_star' + name + '.tsv',
                       output_bucket + 'gwas/gwas_Y_star' + name + '.tsv']
 
-        for n, file_name in enumerate(file_names):
+        for j, file_name in enumerate(file_names):
             result_ht.select(result_ht.locus,
                              result_ht.A1,
                              result_ht.A2,
                              result_ht.rsid,
-                             beta=result_ht.beta[n],
-                             se=result_ht.standard_error[n],
-                             p_value=result_ht.p_value[n]).export(file_name)
+                             N=result_ht.n,
+                             beta=result_ht.beta[j],
+                             se=result_ht.standard_error[j],
+                             p_value=result_ht.p_value[j]).export(file_name)
