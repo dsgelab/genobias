@@ -1,8 +1,8 @@
-## Set up and enviroment
-use Anaconda3
-conda create --prefix=/broad/hptmp/aganna/myenv python=3.7
-source activate /broad/hptmp/aganna/myenv
-conda install -c conda-forge r-rgdal
+## Set up a conda enviroment
+# use Anaconda3
+# conda create --name myenv python=3.7
+# source activate myenv
+# conda install -c conda-forge r-rgdal
 
 install.packages(c("data.table","dplyr","survey","SDMTools","ggplot2","rgdal","sp"))
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -17,7 +17,9 @@ library(SDMTools)
 library(ggplot2)
 library(broom)
 
-d <- fread("/psych/genetics_data/projects/ukbb_31063/phenotypes/ukb31063.raw.csv", header=T)
+# ! Access to UK Biobank individual-level data is required, we can only provide the variable names here.
+ukbb_raw_data <- ""
+d <- fread(ukbb_raw_data, header=T)
 colnames(d) <- paste0("f.",gsub("-",".",colnames(d)))
 
 t1 <- c("f.eid","f.31.0.0","f.53.0.0","f.6138.0.0","f.22704.0.0","f.22702.0.0","f.21022.0.0","f.54.0.0","f.22700.0.0","f.21001.0.0","f.2040.0.0",colnames(d)[grepl("f.22704.0.",colnames(d))],colnames(d)[grepl("f.22702.0.",colnames(d))],colnames(d)[grepl("f.22700.0.",colnames(d))])
@@ -65,36 +67,40 @@ colnames(coord_2011_northdf) <- c("f.eid","north")
 bdE5 <- merge(bdE4[,!grepl("f.22702.0.|f.22704.0.|f.22700.0.",colnames(bdE4)),with=FALSE],coord_2011_eastdf, by="f.eid")
 bdE6 <- merge(bdE5,coord_2011_northdf, by="f.eid")
 
-write.table(bdE6,file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/pheno.tsv", row.names=F, col.names=T, quote=F, sep="\t")
-
+write.table(bdE6,file="pheno.tsv", row.names=F, col.names=T, quote=F, sep="\t")
 
 ### ASSIGN AREA TO EACH INDIVIDUAL ###
-pheno <- read.table("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/pheno.tsv", header=T)
+pheno <- read.table("pheno.tsv", header=T)
 pheno = pheno[!is.na(pheno$east) & !is.na(pheno$north),]
 phenob = pheno %>% select(f.eid, east, north)
 
 sp::coordinates(phenob) = ~east+north
-ogr = rgdal::readOGR('/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/infuse_msoa_lyr_2011_clipped/')
+# Reading 2011 Census Geography boundaries
+# infuse_msoa_lyr_2011_clipped.zip available here https://ec2-54-77-102-218.eu-west-1.compute.amazonaws.com/dataset/2011-census-geography-boundaries-middle-layer-super-output-areas-and-intermediate-zones-7
+ogr = rgdal::readOGR('infuse_msoa_lyr_2011_clipped/')
 shapefile = sp::spTransform(ogr, sp::CRS("+init=epsg:27700"))
 phenob@proj4string = shapefile@proj4string
 pisb = sp::over(phenob, shapefile)
 
 pheno_final <- data.frame(pheno,pisb)
 
+# Remove non euro individuals (requires UKBB individual-level data)
+non_euro_IDs <- ""
+remove <- read.table(non_euro_IDs, header=F)
 
 
-remove <- read.table("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/non_euro_for_BOLT.txt", header=F)
-
-infam <- read.table("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/ukb31063.fam", header=F)
-
+# Keep infam
+ukbb_fam_file <- ""
+infam <- read.table(ukbb_fam_file, header=F)
 pheno_final <- pheno_final[!pheno_final$f.eid %in% c(remove$V1) & pheno_final$f.eid %in% c(infam$V1) ,]
 
+### ?
 # Some check about if annotations are correct
 write.table(data.frame(table(pheno_final$geo_label,pheno_final$f.54.0.0)),file="test.csv", quote=F, row.names=F,col.names=T, sep="\t")
 
-
 # Keep geocodes that are in the census and remove missing education values
-census <- read.csv("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/MSOA.EA_census.sex.age.csv")
+# This file is available in genobias/census/
+census <- read.csv("genobias/census/MSOA.EA_census.sex.age.csv")
 
 pheno_finalC <- pheno_final[as.character(pheno_final$geo_code) %in% as.character(unique(census$geo_code)) & !is.na(pheno_final$geo_code),]
 pheno_finalC <- pheno_finalC[!is.na(pheno_finalC$edu),]
@@ -120,9 +126,9 @@ svymean(~edu,ukbb_design)
 svyby(~edu, ~sex, ukbb_design, svymean)
 
 
-census <- read.csv("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/MSOA.EA_census.sex.age.csv")
+census <- read.csv("genobias/census/MSOA.EA_census.sex.age.csv")
 census <- census[census$geo_code %in% ukbb_new$geo_code,]
-censusN <- read.csv("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/MSOA.EA_census.sex.age.including_frq.csv")
+censusN <- read.csv("genobias/census/MSOA.EA_census.sex.age.including_frq.csv")
 censusN <- censusN[,c("geo_code","census_EA.MSOA.m.35_49.frq","census_EA.MSOA.f.35_49.frq","census_EA.MSOA.m.50_64.frq","census_EA.MSOA.f.50_64.frq","census_EA.MSOA.m.65_plus.frq","census_EA.MSOA.f.65_plus.frq")]
 colnames(censusN) <- c("geo_code","census_EA.MSOA.m.35_49","census_EA.MSOA.f.35_49","census_EA.MSOA.m.50_64","census_EA.MSOA.f.50_64","census_EA.MSOA.m.65_plus","census_EA.MSOA.f.65_plus")
 
@@ -157,7 +163,7 @@ df$sexlab <- ifelse(df$sex==1,"Males","Females")
 #4 3.573665   1         NA Census   Males
 
 
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/figure.pdf", height=4,width=4)
+pdf("genobias/census/figure.pdf", height=4,width=4)
 ggplot(df, aes(x=sexlab, y=edu, col=group)) + 
   geom_errorbar(aes(ymin=edu-(1.96*eduse), ymax=edu+(1.96*eduse)), width=.1) +
   geom_point(size=3) +
@@ -171,12 +177,11 @@ dev.off()
 
 ### PLOT MAP ON ENGLAND WITH COORDINATES ###
 
-
 library(broom)
 phenob2 = pheno %>% select(f.eid, east, north)
 phenob2_sub <- phenob2[phenob2$f.eid %in% pheno_finalC$f.eid,]
 sp::coordinates(phenob2_sub) = ~east+north
-ogr = rgdal::readOGR('/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/infuse_msoa_lyr_2011_clipped/')
+ogr = rgdal::readOGR('infuse_msoa_lyr_2011_clipped/')
 england_wales <- tidy(ogr)
 geo_codedf <- data.frame(geo_code=as.character(ogr$geo_code),id=as.character(0:(length(ogr$geo_code)-1)),stringsAsFactors=F)
 
@@ -184,7 +189,7 @@ england_walesm <- merge(england_wales,geo_codedf,by="id")
 england_walesm$ind <- factor(ifelse(england_walesm$geo_code %in% unique(pheno_finalC$geo_code),1,0))
 
 # Plot it
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/prs_men_women_and_census/census/map.pdf", height=16,width=16)
+pdf("genobias/census/map.pdf", height=16,width=16)
 ggplot() +
   geom_polygon(data = england_walesm, aes( x = long, y = lat, group = group,  fill=ind), color="black", size=0.05) +
   theme_void() + geom_point(aes(x=phenob2_sub@coords[,1],y=phenob2_sub@coords[,2]),col="blue",size=0.01) + scale_fill_manual("",values=c("white","red"), guide=FALSE)
