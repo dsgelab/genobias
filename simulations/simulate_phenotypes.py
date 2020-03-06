@@ -4,6 +4,9 @@ import hail as hl
 import random
 hl.init()
 
+# REQUIRES HAIL v0.2.24
+
+
 # # h2 and rgs specifications
 
 # Simulate genetically unrelated phenotypes with h2 = 0.1, 0.3
