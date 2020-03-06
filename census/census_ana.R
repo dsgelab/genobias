@@ -18,8 +18,7 @@ library(ggplot2)
 library(broom)
 
 # ! Access to UK Biobank individual-level data is required, we can only provide the variable names here.
-ukbb_raw_data <- ""
-d <- fread(ukbb_raw_data, header=T)
+d <- fread('path/ukbb_raw_data', header=T)
 colnames(d) <- paste0("f.",gsub("-",".",colnames(d)))
 
 t1 <- c("f.eid","f.31.0.0","f.53.0.0","f.6138.0.0","f.22704.0.0","f.22702.0.0","f.21022.0.0","f.54.0.0","f.22700.0.0","f.21001.0.0","f.2040.0.0",colnames(d)[grepl("f.22704.0.",colnames(d))],colnames(d)[grepl("f.22702.0.",colnames(d))],colnames(d)[grepl("f.22700.0.",colnames(d))])
@@ -77,7 +76,7 @@ phenob = pheno %>% select(f.eid, east, north)
 sp::coordinates(phenob) = ~east+north
 # Reading 2011 Census Geography boundaries
 # infuse_msoa_lyr_2011_clipped.zip available here https://ec2-54-77-102-218.eu-west-1.compute.amazonaws.com/dataset/2011-census-geography-boundaries-middle-layer-super-output-areas-and-intermediate-zones-7
-ogr = rgdal::readOGR('infuse_msoa_lyr_2011_clipped/')
+ogr = rgdal::readOGR('path/infuse_msoa_lyr_2011_clipped/')
 shapefile = sp::spTransform(ogr, sp::CRS("+init=epsg:27700"))
 phenob@proj4string = shapefile@proj4string
 pisb = sp::over(phenob, shapefile)
@@ -85,16 +84,13 @@ pisb = sp::over(phenob, shapefile)
 pheno_final <- data.frame(pheno,pisb)
 
 # Remove non euro individuals (requires UKBB individual-level data)
-non_euro_IDs <- ""
-remove <- read.table(non_euro_IDs, header=F)
+remove <- read.table('path/non_euro_ID_list', header=F)
 
 
 # Keep infam
-ukbb_fam_file <- ""
-infam <- read.table(ukbb_fam_file, header=F)
+infam <- read.table('path/ukbb_fam_file', header=F)
 pheno_final <- pheno_final[!pheno_final$f.eid %in% c(remove$V1) & pheno_final$f.eid %in% c(infam$V1) ,]
 
-### ?
 # Some check about if annotations are correct
 write.table(data.frame(table(pheno_final$geo_label,pheno_final$f.54.0.0)),file="test.csv", quote=F, row.names=F,col.names=T, sep="\t")
 
@@ -181,7 +177,7 @@ library(broom)
 phenob2 = pheno %>% select(f.eid, east, north)
 phenob2_sub <- phenob2[phenob2$f.eid %in% pheno_finalC$f.eid,]
 sp::coordinates(phenob2_sub) = ~east+north
-ogr = rgdal::readOGR('infuse_msoa_lyr_2011_clipped/')
+ogr = rgdal::readOGR('path/infuse_msoa_lyr_2011_clipped/')
 england_wales <- tidy(ogr)
 geo_codedf <- data.frame(geo_code=as.character(ogr$geo_code),id=as.character(0:(length(ogr$geo_code)-1)),stringsAsFactors=F)
 
