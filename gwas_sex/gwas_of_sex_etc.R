@@ -101,9 +101,9 @@ ggman_bw <- function(gwas, bp = NA, chrom = NA, pvalue = NA, intervals=NA, ymax=
 
 ######### STEP 1. Import data and check QC #######
 
-andme <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples.assoc")
-andme30 <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_Age30.assoc")
-andme_direct <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_Sex_AllSamples_Geno_direct_geno.assoc")
+andme <- fread("23andMe_SexGWAS_AllSamples.assoc")
+andme30 <- fread("23andMe_SexGWAS_Age30.assoc")
+andme_direct <- fread("23andMe_Sex_AllSamples_Geno_direct_geno.assoc")
 
 ## Keep common variants and imputation rsqr of 0.8
 andmeQC <- andme[andme$effect_freq > 0.01 & andme$effect_freq < 0.99 & andme$imp_rsqr > 0.8,]
@@ -115,13 +115,13 @@ dim(andmeQC[andmeQC$P < 5e-8,])
 
 
 ### Write files to pass to FUMA
-write.table(andmeQC[,c("SNP","A1","A2","N","Effect","se","P")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.tsv", row.names=F, quote=F, sep="\t")
-write.table(andme30QC[,c("SNP","A1","A2","N","Effect","se","P")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.tsv", row.names=F, quote=F, sep="\t")
+write.table(andmeQC[,c("SNP","A1","A2","N","Effect","se","P")], file="23andMe_SexGWAS_AllSamples_edited.tsv", row.names=F, quote=F, sep="\t")
+write.table(andme30QC[,c("SNP","A1","A2","N","Effect","se","P")], file="23andMe_SexGWAS_30younger_edited.tsv", row.names=F, quote=F, sep="\t")
 
 
 
 ######### STEP 2. ADDITIONAL QC ON DIRECTLY GENOTYPED SNPS #######
- intervals <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/FUMA/GenomicRiskLoci.txt")
+intervals <- fread("genobias/gwas_sex/GenomicRiskLoci.txt")
 
 
 # Extract directly genotyped SNP with lowest P-value for each loci and add sequence 50 and 250 bp upstream and downstream 
@@ -145,11 +145,11 @@ direct_geno_per_locus <- direct_geno_per_locus[direct_geno_per_locus$pvalue < 0.
 TO_EXP <- NULL
 for(k in 1:nrow(direct_geno_per_locus))
 {TO_EXP <- rbind(TO_EXP,rbind(paste0(">",direct_geno_per_locus$varID[k]),as.character(direct_geno_per_locus$seqout50[k])))}
-write.table(TO_EXP,file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/blat_50_seq.txt",col.names=F,row.names=F,quote=F)
+write.table(TO_EXP,file="genobias/gwas_sex/blat_50_seq.txt",col.names=F,row.names=F,quote=F)
 
 
 ## Read in results and add flags to the final results
-seq50_res <- read.csv("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/blat_50_seq_res.csv", sep=";")
+seq50_res <- read.csv("genobias/gwas_sex/blat_50_seq_res.csv", sep=";")
 colnames(seq50_res)[1] <- "QUERY"
 seq50_res$similar <- as.numeric(gsub(" %","",seq50_res$IDENTITY))
 
@@ -166,14 +166,14 @@ dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==1 | direct_geno_per_lo
 dim(direct_geno_per_locus[direct_geno_per_locus$flag_maf==0 & direct_geno_per_locus$flag_hwe==0 & direct_geno_per_locus$flag_callrate==0 & direct_geno_per_locus$flag_homology==0,])
 
 direct_geno_per_locus$combine_locus <- paste0(direct_geno_per_locus$chrom,"_",direct_geno_per_locus$locus_start,"_",direct_geno_per_locus$locus_end)
-write.table(direct_geno_per_locus[,c("combine_locus","varID","effect_allele","other_allele","geno_hwe_p","gt.rate","imp_freq_a","flag_homology","flag_maf","flag_hwe","flag_callrate","pvalue","effect","stderr")],file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/direct_genotyped_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
+write.table(direct_geno_per_locus[,c("combine_locus","varID","effect_allele","other_allele","geno_hwe_p","gt.rate","imp_freq_a","flag_homology","flag_maf","flag_hwe","flag_callrate","pvalue","effect","stderr")],
+            file="genobias/gwas_sex/direct_genotyped_SNPs_results.tsv",row.names=F, col.names=T, quote=F, sep="\t")
 
 ######### STEP 3. PLOT MANHATTAN PLOT #######
 
 p_fin <- ggman_bw(gwas=andmeQC,pvalue="P",chrom="chrom",bp="position_b37",intervals=data.frame(chr=intervals$chr,start=intervals$start,end=intervals$end),ymax=-log10(0.0000000005))
 
-
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andme_mm_grey.pdf", width=11, height=5)
+pdf("genobias/gwas_sex/23andme_mm_grey.pdf", width=11, height=5)
 p_fin
 dev.off()
 
@@ -216,10 +216,10 @@ to_exp <- data.frame(rsISD=andmeall$SNP,beta_all=andmeall$Effect.x,se_all=andmea
 intervals$combine_locus <- paste0(intervals$chr,"_",intervals$start,"_",intervals$end)
 
 to_exp <- merge(to_exp,intervals[,c("rsID","combine_locus")],by.x="rsISD",by.y="rsID")
-write.table(to_exp,"/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/differences_all_30.tsv", col.names=T, row.names=F, quote=F, sep="\t")
+write.table(to_exp,"differences_all_30.tsv", col.names=T, row.names=F, quote=F, sep="\t")
 
 
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/snp_replication_andme_andmelt30.pdf", width=5, height=5)
+pdf("snp_replication_andme_andmelt30.pdf", width=5, height=5)
 ggplot(aes(y=Effect.x,x=Effect.y,ymin=betaallmin,ymax=betaallmax,xmin=beta30min,xmax=beta30max),data=andmeall) + geom_point(color="red",size=3)  +  geom_errorbar(aes(ymin = betaallmin,ymax = betaallmax),size=0.001) + geom_errorbarh(aes(xmin = beta30min,xmax = beta30max),size=0.001) + theme_bw() + ylab("Coefficient for all individuals") + xlab("Coefficient for individuals < 30 years old") + geom_abline(intercept=0, slope=1)  
 dev.off()
 
@@ -228,32 +228,55 @@ dev.off()
 
 
 ## Heritability for all
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.tsv --N-col N --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited --snp SNP --a1 A1 --a2 A2 --p P --signed-sumstats Effect,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
+munge_sumstats.py \
+--sumstats 23andMe_SexGWAS_AllSamples_edited.tsv \
+--N-col N \
+--out 23andMe_SexGWAS_AllSamples_edited \
+--snp SNP \
+--a1 A1 \
+--a2 A2 \
+--p P \
+--signed-sumstats Effect,0 \
+--merge-alleles w_hm3.snplist
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py \
+--h2 23andMe_SexGWAS_AllSamples_edited.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited
+--out 23andMe_SexGWAS_AllSamples_edited
 
 
 ## Heritability for younger than 30
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.tsv --N-col N --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited --snp SNP --a1 A1 --a2 A2 --p P --signed-sumstats Effect,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
+munge_sumstats.py \
+--sumstats 23andMe_SexGWAS_30younger_edited.tsv \
+--N-col N \
+--out 23andMe_SexGWAS_30younger_edited \
+--snp SNP \
+--a1 A1 \
+--a2 A2 \
+--p P \
+--signed-sumstats Effect,0 \
+--merge-alleles w_hm3.snplist
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py \
+--h2 23andMe_SexGWAS_30younger_edited.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited
+--out 23andMe_SexGWAS_30younger_edited
 
 
 ## Genetic correlation between all and younger than 30
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --rg /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.sumstats.gz,/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_30younger_edited.sumstats.gz --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited_vs_23andMe_SexGWAS_30younger_edited
-
+ldsc.py \
+--rg 23andMe_SexGWAS_AllSamples_edited.sumstats.gz,23andMe_SexGWAS_30younger_edited.sumstats.gz \
+--ref-ld-chr eur_w_ld_chr/ \
+--w-ld-chr eur_w_ld_chr/ \
+--out 23andMe_SexGWAS_AllSamples_edited_vs_23andMe_SexGWAS_30younger_edited
 
 
 
@@ -264,26 +287,35 @@ dev.off()
 #################
 
 
-ukbb <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed")
+ukbb <- fread("UKBB_AgeAdj_sex_23andMe_coded_Imputed")
 dim(ukbb[ukbb$P_BOLT_LMM_INF < 5e-8,])
 
 
 ## save for FUM
-write.table(ukbb[,c("SNP","ALLELE1","ALLELE0","BETA","P_BOLT_LMM_INF")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.tsv", row.names=F, quote=F, sep="\t")
+write.table(ukbb[,c("SNP","ALLELE1","ALLELE0","BETA","P_BOLT_LMM_INF")], file="UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.tsv", row.names=F, quote=F, sep="\t")
 
 
 ## Munge
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.tsv --N 452302 --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit --snp rsid --a1 ALLELE1 --a2 ALLELE0 --p P_BOLT_LMM_INF --signed-sumstats BETA,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
+munge_sumstats.py \
+--sumstats UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.tsv \
+--N 452302 \
+--out UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit \
+--snp rsid \
+--a1 ALLELE1 \
+--a2 ALLELE0 \
+--p P_BOLT_LMM_INF \
+--signed-sumstats BETA,0 \
+--merge-alleles w_hm3.snplist
 
 
 #h2
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py --h2 UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit
+--out UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit
 
 
 
@@ -293,24 +325,34 @@ write.table(ukbb[,c("SNP","ALLELE1","ALLELE0","BETA","P_BOLT_LMM_INF")], file="/
 ###########
 
 
-bbj1_cov <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619.tsv")
+bbj1_cov <- fread("BBJ_covD_an1_230619.tsv")
 
 
 bbj1_cov$P <- 2*pnorm(-abs(bbj1_cov$beta/bbj1_cov$se))
 dim(bbj1_cov[bbj1_cov$P < 5e-8,])
 
-write.table(bbj1_cov[,c("rsid","reference_allele","effect_allele","n","beta","se","P")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619_edited.tsv", row.names=F, quote=F, sep="\t")
+write.table(bbj1_cov[,c("rsid","reference_allele","effect_allele","n","beta","se","P")], file="BBJ_covD_an1_230619_edited.tsv", row.names=F, quote=F, sep="\t")
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619_edited.tsv --N-col n --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619_edited --snp rsid --a1 effect_allele --a2 reference_allele --p P --signed-sumstats beta,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
+munge_sumstats.py \
+--sumstats BBJ_covD_an1_230619_edited.tsv \
+--N-col n \
+--out BBJ_covD_an1_230619_edited \
+--snp rsid \
+--a1 effect_allele \
+--a2 reference_allele \
+--p P \
+--signed-sumstats beta,0 \
+--merge-alleles w_hm3.snplist
 
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619_edited.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py \
+--h2 BBJ_covD_an1_230619_edited.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/BBJ_covD_an1_230619_edited
+--out BBJ_covD_an1_230619_edited
 
 
 ##############
@@ -318,25 +360,34 @@ write.table(bbj1_cov[,c("rsid","reference_allele","effect_allele","n","beta","se
 ##############
 
 
-pyshc_cov <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019.tsv")
+pyshc_cov <- fread("iPSYCHwPsychCov_an1_09072019.tsv")
 
 
 pyshc_cov$P <- 2*pnorm(-abs(pyshc_cov$beta/pyshc_cov$se))
 dim(pyshc_cov[pyshc_cov$P < 5e-8,])
 
 
-write.table(pyshc_cov[,c("rsid","reference_allele","effect_allele","n","beta","se","P")], file="/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019_edited.tsv", row.names=F, quote=F, sep="\t")
+write.table(pyshc_cov[,c("rsid","reference_allele","effect_allele","n","beta","se","P")], file="iPSYCHwPsychCov_an1_09072019_edited.tsv", row.names=F, quote=F, sep="\t")
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/munge_sumstats.py --sumstats /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019_edited.tsv --N-col n --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019_edited --snp rsid --a1 effect_allele --a2 reference_allele --p P --signed-sumstats beta,0 --merge-alleles /stanley/genetics/analysis/software/aganna/ldsc-master/w_hm3.snplist
+munge_sumstats.py \
+--sumstats iPSYCHwPsychCov_an1_09072019_edited.tsv \
+--N-col n \
+--out iPSYCHwPsychCov_an1_09072019_edited \
+--snp rsid \
+--a1 effect_allele \
+--a2 reference_allele \
+--p P \
+--signed-sumstats beta,0 \
+--merge-alleles w_hm3.snplist
 
 
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019_edited.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py --h2 iPSYCHwPsychCov_an1_09072019_edited.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/iPSYCHwPsychCov_an1_09072019_edited
+--out iPSYCHwPsychCov_an1_09072019_edited
 
 
 
@@ -345,18 +396,19 @@ write.table(pyshc_cov[,c("rsid","reference_allele","effect_allele","n","beta","s
 ##############
 
 #h2
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --h2 /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/finngen_passive.sumstats.gz \
---ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_baselineLD_ldscores/baselineLD. \
---w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
+ldsc.py --h2 finngen_passive.sumstats.gz \
+--ref-ld-chr 1000G_Phase3_baselineLD_ldscores/baselineLD. \
+--w-ld-chr 1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC. \
 --overlap-annot \
---frqfile-chr /stanley/genetics/analysis/software/aganna/ldsc-master/1000G_Phase3_frq/1000G.EUR.QC. \
+--frqfile-chr 1000G_Phase3_frq/1000G.EUR.QC. \
 --print-coefficients \
---out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/finngen_passive
+--out finngen_passive
 
 
 
-#########################################################################################
-#### PLOT OF HERITABILITIES ########################################################################################
+#################################
+#### PLOT OF HERITABILITIES #####
+#################################
 
 liabscale <- function(coef,se,prev,samp)
 {coefe <- coef*prev*(1-prev)/(dnorm(qnorm(prev))^2)
@@ -390,11 +442,11 @@ ymin <- rg_liab2 - 1.96*se_liab2
 ymax <- rg_liab2 + 1.96*se_liab2
 df <- data.frame(rg_liab2,se_liab2,label,ymin,ymax,pval_liab2,labelsig)
 df$rg_liab3 <- df$rg_liab2
-df$rg_liab3[df$label=="iPSYCH"] <- 0.0001 ## Becase negative, set to 0
+df$rg_liab3[df$label=="iPSYCH"] <- 0.0001 ## Because negative, set to 0
 
 
 ### Main plot ####
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals.pdf", width=4.3,height=3)
+pdf("heritability_plot_with_confidence_intervals.pdf", width=4.3,height=3)
 ggplot(aes(y=rg_liab3,x=label), data=df) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("SNP-heritability for sex") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df$pval_liab, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) + geom_hline(yintercept=0)
 dev.off()
 
@@ -409,12 +461,9 @@ df_meta$ymin <- df_meta$rg_liab2 - 1.96*df_meta$se_liab2
 df_meta$ymax <- df_meta$rg_liab2 + 1.96*df_meta$se_liab2
 
 
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/heritability_plot_with_confidence_intervals_meta.pdf", width=1.8,height=3)
+pdf("heritability_plot_with_confidence_intervals_meta.pdf", width=1.8,height=3)
 ggplot(aes(y=rg_liab2,x=label), data=df_meta) + geom_point(aes(colour=labelsig),size=3.5) + theme_bw() + ylab("") + coord_cartesian(ylim = c(-0.001,0.035)) + xlab("") +  geom_text(aes(label=paste0("P==",gsub('e-0*', ' %*% 10^-', prettyNum(df_meta$pval_liab2, digits=2)))), parse=TRUE,vjust=-0.4, size=2.5, hjust=-0.2) + scale_colour_manual(values=c("blue","red")) + theme(legend.position = "none") + geom_errorbar(aes(ymin=ymin,ymax=ymax,colour=labelsig), width=0.1, size=0.3) +
   theme(axis.title=element_blank(),
         axis.text=element_blank(),
         axis.ticks=element_blank()) + geom_hline(yintercept=0)
 dev.off()
-
-
-

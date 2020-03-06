@@ -9,13 +9,13 @@ library(gwascat)
 library(ontologyIndex)
 
 
-
-snps_all <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/pleiotropy/uniqID.txt", header=F)
+# Extract genobias/pleiotropy/uniqID.zip first
+snps_all <- fread("genobias/pleiotropy/uniqID.txt", header=F)
 snps_all$chr <- sapply(strsplit(snps_all$V1,":"),"[[",1)
 snps_all$pos <- sapply(strsplit(snps_all$V1,":"),"[[",2)
 snps_all$chr_pos <- paste0(snps_all$chr,"_",snps_all$pos)
 
-rsid_translator <- fread("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/ukb31063.gwas_variants.tsv")
+rsid_translator <- fread("ukb31063.gwas_variants.tsv")
 rsid_translator$chr_pos <- paste0(rsid_translator$chr,"_",rsid_translator$pos)
 
 snps_allM <- merge(snps_all,rsid_translator,by="chr_pos")
