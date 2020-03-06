@@ -46,7 +46,7 @@ c("whr_males","Waist-to-hip ratio (Males)")))
 ### Function to extract genetic correlaition
 get_h2_se <- function(x)
 {
-	tt <- system( paste0('grep "/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/" ', x), intern = T)[5]
+	tt <- system( paste0('grep "path/" ', x), intern = T)[5]
 
 
 	tt2 <- strsplit(tt," ")
@@ -68,7 +68,7 @@ get_h2_se <- function(x)
 
 #### Run genetic correlations ####
 
-files <- list.files("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/",pattern="*.sumstats.gz")
+files <- list.files("path/genetic_correlation/",pattern="*.sumstats.gz")
 
 namesv <- c("UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.sumstats.gz","23andMe_SexGWAS_30younger_edited.sumstats.gz" ,"23andMe_SexGWAS_AllSamples_edited.sumstats.gz")
 
@@ -78,9 +78,9 @@ for (names in namesv)
 {
 	for (f in files)
 	{
-	system(paste0("/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --rg /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/",names,",/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/",f," --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/",gsub(".sumstats.gz","",names),"?",gsub(".sumstats.gz","",f),"_rg"))
+	system(paste0("ldsc.py --rg ",names,",",f,"--ref-ld-chr eur_w_ld_chr/ --w-ld-chr eur_w_ld_chr/ --out path/genetic_correlation/",gsub(".sumstats.gz","",names),"?",gsub(".sumstats.gz","",f),"_rg"))
 
-	temp <- get_h2_se(paste0("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/",gsub(".sumstats.gz","",names),"?",gsub(".sumstats.gz","",f),"_rg.log"))
+	temp <- get_h2_se(paste0("path/genetic_correlation/",gsub(".sumstats.gz","",names),"?",gsub(".sumstats.gz","",f),"_rg.log"))
 
 	rgs <- rbind(rgs,c(names,f,temp))
 
@@ -100,12 +100,12 @@ dfm$group[dfm$X1=="23andMe_SexGWAS_30younger_edited.sumstats.gz"] <- "23andMe_lt
 dfm_toexp <- dfm[,colnames(dfm) %in% c("matchname","X3","X4","X5","X2.y","group")]
 colnames(dfm_toexp) <- c("matchname","rg","se","pval","trait","group")
 
-write.csv(dfm_toexp,"/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/SexGWAS2019_GeneticCorrelations_final.csv", row.names=F, quote=F)
+write.csv(dfm_toexp,"genobias/gwas_sex/SexGWAS2019_GeneticCorrelations_final.csv", row.names=F, quote=F)
 
 
 
 ### Compare 23andme and UK Biobank 
-d <- read.csv("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/SexGWAS2019_GeneticCorrelations_final.csv")
+d <- read.csv("genobias/gwas_sex/SexGWAS2019_GeneticCorrelations_final.csv")
 
 mm <- merge(d,traitmap,by.x="matchname", by.y="X1")
 mm <- mm[!mm$group %in% c("23andMe_lt30"),]
@@ -121,12 +121,15 @@ mmr$pvalind <- factor(ifelse(mmr$pval < (0.05/nrow(mm)) | mmr$pval.1 < (0.05/nro
 mmr$X2[mmr$pvalind==0] <- NA
 
 ##
-pdf("/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/genetic_correlation/rg_ukb_23andMe.pdf",width=6,height=5)
+pdf("genobias/gwas_sex/rg_ukb_23andMe.pdf",width=6,height=5)
 ggplot(aes(x=rg,y=rg.1),data=mmr) + geom_point(aes(col=pvalind,alpha=pvalind)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black")) + ylab("Genetic correlation with sex in 23andMe") + xlab("Genetic correlation with sex in UK Biobank")  + geom_abline(intercept =0 , slope = 1, size=0.1) + geom_errorbarh(aes(xmin = ymin,xmax = ymax, col=pvalind), alpha=0.5) + geom_errorbar(aes(ymin = ymin.1,ymax = ymax.1, col=pvalind), alpha=0.5) + scale_colour_manual(values=c("grey","steelblue4"), guide=FALSE) + scale_alpha_manual(values=c(0.3,1), guide=FALSE) + xlim(-0.5,0.5) + ylim(-0.5,0.5) + geom_text_repel(aes(label=X2),size=3) + geom_vline(xintercept =0, size=0.1) + geom_hline(yintercept =0, size=0.1)
 dev.off()
 
 
 ### genetic correlation between UK Biobank and 23andMe 
-
-/stanley/genetics/analysis/software/aganna/ldsc-master/ldsc.py --rg /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_SexGWAS_AllSamples_edited.sumstats.gz,/stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.sumstats.gz --ref-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --w-ld-chr /stanley/genetics/analysis/software/aganna/ldsc-master/eur_w_ld_chr/ --out /stanley/genetics/analysis/ukbb/aganna/uk_bio/bias/gwas_of_sex/23andMe_vs_ukBiobank
+ldsc.py \
+--rg 23andMe_SexGWAS_AllSamples_edited.sumstats.gz,UKBB_AgeAdj_sex_23andMe_coded_Imputed_edit.sumstats.gz \
+--ref-ld-chr eur_w_ld_chr/ \
+--w-ld-chr eur_w_ld_chr/ \
+--out 23andMe_vs_ukBiobank
 
