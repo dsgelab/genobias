@@ -29,20 +29,11 @@ def export_gwas(g, fname):
     return
 
 
-# input_matrix = 'gs://mattia/mattia-simulations/simEUR350_2.mt'
-# output_bucket = 'gs://mattia/mattia-simulations/simulations_heckman_rg_0/'
-input_matrix = 'gs://mattia/mattia-simulations/simEUR350_correlated.mt'
-output_bucket = 'gs://mattia/mattia-simulations/simulations_heckman/'
+input_matrix = 'gs://.../sim_350k_correlated.mt'
+output_bucket = 'gs://.../simulations_heckman/'
 
 # Phenotypes:
-# simEUR350_2 (uncorrelated)
-# y0:y3     h2 = 0.1
-# y04:y7    h2 = 0.3
-# x = 4
-# y = 5
-# u = 6
-
-# simEUR350_correlated:
+# sim_350k_correlated:
 # y0        h2 = 0.3
 # y1,y8     h2 = 0.3, rg(y0,yn) = [-0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0]
 x = 0

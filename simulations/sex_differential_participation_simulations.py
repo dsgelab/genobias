@@ -25,7 +25,7 @@ def export_gwas(g, fname):
 
 
 # # # Import MatrixTable with simulated data
-mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_2.mt')
+mt = hl.read_matrix_table('gs://.../sim_350k_uncorrelated.mt')
 
 
 # # # Select phenotype columns and output bucket
@@ -36,12 +36,12 @@ mt = hl.read_matrix_table('gs://mattia-simulations/simEUR350_2.mt')
 # h2: 0.1
 # mt = mt.annotate_cols(y0=mt.y[0])
 # mt = mt.annotate_cols(y1=mt.y[1])
-# out_bucket = 'gs://mattia/mattia-simulations/simulations_0.1/'
+# out_bucket = 'gs://.../simulations_0.1/'
 
 # h2: 0.3
 mt = mt.annotate_cols(y0=mt.y[4])
 mt = mt.annotate_cols(y1=mt.y[5])
-out_bucket = 'gs://mattia/mattia-simulations/simulations_0.3/'
+out_bucket = 'gs://.../simulations_0.3/'
 
 
 # # # GWAS in full population
