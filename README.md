@@ -6,6 +6,6 @@
 
 - **/census**: differences in EA level between UKBB participants and census data - *Figure 5B*
 
-- **/simulations**: simulations to illustrate potential effects of sex-differential participation bias - *Supplementary Notes/Figures 3, 4, 6, 8*
+- **/simulations**: simulations to illustrate effects of sex-differential participation bias and implementation of proposed correction methods in genomicSEM - *Supplementary Notes/Figures 3, 4, 6, 8*
 
 - **/sex_specific_MR**: simulations on real UKBB data to demonstrate the potential extent of selection biased by BMI on the causal effect of BMI on T2D - *Supplementary Notes/Figure 5*
