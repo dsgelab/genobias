@@ -1,4 +1,6 @@
-# Reproduce the main analyses in *Genetic analyses identify widespread determinants of sex-differential study participation bias*
+# Reproduce the main analyses in*Genetic analyses identify widespread sex-differential participation bias*
+
+https://www.biorxiv.org/content/10.1101/2020.03.22.001453v1
 
 - **/gwas_sex**: GWAS of sex, sex heritability accross studies and genetic correlation between traits in 23andMe and UKBB, as described in the main text - *Figure 1, 2, 4*
 
